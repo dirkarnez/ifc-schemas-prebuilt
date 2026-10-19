@@ -37,10 +37,14 @@ jobs:
         with:
           python-version: '>=3.13'
           check-latest: true
+
+      - name: Generate JSON schema structure
+        working-directory: "${{ env.targetName }}/code"
+        run: |
+          pip install -r requirements.txt
           
       - name: Generate JSON schema structure
         working-directory: "${{ env.targetName }}/code"
-        shell: bash
         run: |
           set -euxo pipefail
           python -m generators.json ../schemas/ifc4x3_add2.uml ../output/psd --output ../output/structure.json
