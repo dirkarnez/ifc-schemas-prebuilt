@@ -55,7 +55,7 @@ jobs:
           python -m pip install "Cython<3" wheel setuptools
           python -m pip install --no-build-isolation "PyYAML==6.0"
           python -m pip install --no-build-isolation reversestem
-          python -m pip install -r ifc43/code/requirements.txt nltk
+          python -m pip install -r ${{ env.targetName }}/code/requirements.txt nltk
           python -m pip install typing_extensions lark
           
           # get a recent ifcopenshell 0.8 build with the latest ifcopenshell.mvd changes
