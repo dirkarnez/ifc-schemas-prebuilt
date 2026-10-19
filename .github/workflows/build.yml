@@ -37,8 +37,8 @@ jobs:
         
       - uses: actions/setup-python@v7
         with:
-          python-version: '>=3.13'
-          check-latest: true
+          python-version: '3.13' # if too new, cannot build
+          # check-latest: true
 
       - name: Generate JSON schema structure
         working-directory: "${{ env.targetName }}/code"
