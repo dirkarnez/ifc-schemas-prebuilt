@@ -40,10 +40,34 @@ jobs:
           python-version: '3.13' # if too new, cannot build
           # check-latest: true
 
-      - name: Generate JSON schema structure
-        working-directory: "${{ env.targetName }}/code"
+      - working-directory: "${{ env.targetName }}/code"
         run: |
           pip install -r requirements.txt
+
+      - name: Generate EXPRESS and XSD
+        working-directory: "${{ env.targetName }}/code"
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python -m generators.express ../schemas/ifc4x3_add2.uml \
+            --output ../output/IFC.exp \
+            --with-xsd \
+            --xsd-output ../output/IFC.xsd
+
+      - name: Generate property sets
+        working-directory: "${{ env.targetName }}/code"
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p ../output/psd
+          python -m generators.pset ../schemas/ifc4x3_add2.uml --output ../output/psd
+
+      - name: Generate bSDD export
+        working-directory: "${{ env.targetName }}/code"
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python -m generators.bsdd ../schemas/ifc4x3_add2.uml --output ../output/bsdd
           
       - name: Generate JSON schema structure
         working-directory: "${{ env.targetName }}/code"
