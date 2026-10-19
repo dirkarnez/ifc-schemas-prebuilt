@@ -1,0 +1,63 @@
+name: build-schemas
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - 'c*'
+      
+permissions:
+    contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+    runs-on: ${{ matrix.os }}
+    env:
+      targetName: IFC4.x-development
+      targetRef: ifc4.3-main
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # - shell: cmd
+      #   run: git config --global core.autocrlf false
+      
+      - uses: actions/checkout@v6
+        with:
+          repository: "buildingSMART/${{ env.targetName }}"
+          ref: ${{ env.targetRef }}
+          path: ${{ env.targetName }}
+          submodules: true
+          fetch-depth: 0 # <-- clone with complete history
+          
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '>=3.13'
+          check-latest: true
+          
+      - name: Generate JSON schema structure
+        working-directory: "${{ env.targetName }}/code"
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python -m generators.json ../schemas/ifc4x3_add2.uml ../output/psd --output ../output/structure.json
+          
+      - run: |
+          ls -R
+          
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          directory: "${{ env.targetName }}/output"
+          filename: "${{ env.targetName }}-${{ github.ref_name }}.zip"
+        
+      - name: Release prebuilt
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "${{ env.targetName }}/installation/${{ env.targetName }}-${{ github.ref_name }}.zip"
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
