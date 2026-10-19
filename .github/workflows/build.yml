@@ -40,6 +40,30 @@ jobs:
           python-version: '3.13' # if too new, cannot build
           # check-latest: true
 
+      - name: Install system dependencies
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y graphviz rsync unzip curl
+
+      - name: Install Python dependencies
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install "Cython<3" wheel setuptools
+          python -m pip install --no-build-isolation "PyYAML==6.0"
+          python -m pip install --no-build-isolation reversestem
+          python -m pip install -r ifc43/code/requirements.txt nltk
+          python -m pip install typing_extensions lark
+          
+          # get a recent ifcopenshell 0.8 build with the latest ifcopenshell.mvd changes
+          curl --silent --show-error --retry 5 -o /tmp/ifcopenshell_python.zip https://s3.amazonaws.com/ifcopenshell-builds/ifcopenshell-python-`python3 -c 'import sys;print("".join(map(str, sys.version_info[0:2])))'`-v0.8.6-f8da61b-linux64.zip
+          mkdir -p `python3 -c 'import site; print(site.getusersitepackages())'`
+          unzip -d `python3 -c 'import site; print(site.getusersitepackages())'` /tmp/ifcopenshell_python.zip
+          rm /tmp/ifcopenshell_python.zip
+
       - working-directory: "${{ env.targetName }}/code"
         run: |
           pip install -r requirements.txt
